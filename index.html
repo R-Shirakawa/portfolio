@@ -192,6 +192,218 @@ flexibility(document.documentElement);
             </div>
         </section>
     </main>
+    
+    <code>
+        <!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        input[type="text"] {
+            width: 500px;
+        }
+        
+        .updateSql {
+            display: flex;
+            align-items: center;
+        }
+        
+        textarea#updateSql {
+            width: 1000px;
+        }
+        
+        .condition2 {
+            display: none;
+        }
+        
+        .input-error {
+            background-color: #ffe6e6;
+        }
+    </style>
+    <title>SQL UPDATE文生成ツール</title>
+</head>
+
+<body>
+
+    <h2>SQL UPDATE文生成ツール</h2>
+
+    <form id="updateForm">
+        <label for="tableName">テーブル名(必須)：</label>
+        <input type="text" id="tableName" name="tableName" placeholder="ここにテーブル名を入力してください" required><br><br>
+
+        <label for="columnName">更新するカラム名(必須)：</label>
+        <input type="text" id="columnName" name="columnName" placeholder="ここに更新したいカラム名を入力してください" required><br><br>
+
+        <label for="updateValue">更新内容(必須)：</label>
+        <input type="text" id="updateValue" name="updateValue" placeholder="ここに更新したい値を入力してください" required>
+
+        <label for="updateValueType">データ型(必須)：</label>
+        <select id="updateValueType" name="updateValueType">
+            <option value="" disabled selected style="display:none;">データの型を選択してください</option>
+            <option value="数値">数値</option>
+            <option value="文字型">文字型</option>
+        </select>
+
+        <br><br>
+
+        <label for="conditionColumn">条件となるカラム名：</label>
+        <input type="text" id="conditionColumn" name="conditionColumn" placeholder="ここに更新対象レコードを特定できるカラム名を入力してください"><br><br>
+
+        <label for="conditionValue">条件の値：</label>
+        <input type="text" id="conditionValue" name="conditionValue" placeholder="ここに更新対象レコードを特定できる値を入力してください">
+
+        <label for="conditionValueType">データ型(条件入力時は必須)：</label>
+        <select id="conditionValueType" name="conditionValueType">
+            <option value="" disabled selected style="display:none;">データの型を選択してください</option>
+            <option value="数値">数値</option>
+            <option value="文字型">文字型</option>
+        </select>
+
+        <br><br>
+
+        <label for="conditionFlg2">条件が複数ある場合はここにチェック</label>
+        <input type="checkbox" name="conditionFlg2" id="conditionFlg2" onchange="conditionFlg()">
+
+        <br><br>
+
+        <div class="condition2">
+            <label for="conditionColumn">2つ目の条件となるカラム名：</label>
+            <input type="text" id="conditionColumn2" name="conditionColumn2" placeholder="ここに更新対象レコードを特定できるカラム名を入力してください"><br><br>
+
+            <label for="conditionValue">2つ目の条件の値：</label>
+            <input type="text" id="conditionValue2" name="conditionValue2" placeholder="ここに更新対象レコードを特定できる値を入力してください">
+
+            <label for="conditionValueType2">データ型(条件入力時は必須)：</label>
+            <select id="conditionValueType2" name="conditionValueType2">
+                <option value="" disabled selected style="display:none;">データの型を選択してください</option>
+                <option value="数値">数値</option>
+                <option value="文字型">文字型</option>
+            </select>
+
+            <br><br>
+        </div>
+
+        <button type="button" value="SQL文を生成" onclick="createSQL()">SQL文を生成</button><br><br>
+
+        <div class="updateSql">
+            <label for="updateSql">生成したSQL文：</label>
+            <textarea name="updateSql" id="updateSql" rows="1"></textarea>
+        </div>
+    </form>
+
+    <script>
+        function conditionFlg() {
+            var conditionFlg2 = document.getElementById("conditionFlg2");
+            var condition2 = document.querySelector(".condition2");
+
+            console.log(conditionFlg2.checked);
+            console.log(condition2);
+
+            if (conditionFlg2.checked) {
+                condition2.style.display = "block";
+
+            } else {
+                condition2.style.display = "none";
+            }
+        }
+
+        function createSQL() {
+            var tableName = document.getElementById("tableName").value;
+            var columnName = document.getElementById("columnName").value;
+            var updateValue = document.getElementById("updateValue").value;
+            var updateValueType = document.getElementById("updateValueType").value;
+            var conditionColumn = document.getElementById("conditionColumn").value;
+            var conditionValue = document.getElementById("conditionValue").value;
+            var conditionValueType = document.getElementById("conditionValueType").value;
+
+            var conditionColumn2 = document.getElementById("conditionColumn2").value;
+            var conditionValue2 = document.getElementById("conditionValue2").value;
+            var conditionValueType2 = document.getElementById("conditionValueType2").value;
+
+
+            // 必須入力の入力チェック
+            if (tableName === "" || columnName === "" || updateValue === "" || updateValueType === "") {
+                alert("テーブル名、更新するカラム名、更新内容、データ型は必須項目です");
+                // 入力がされていない項目に対してクラスを追加して背景色を変更
+                if (tableName === "") document.getElementById("tableName").classList.add('input-error');
+                if (columnName === "") document.getElementById("columnName").classList.add('input-error');
+                if (updateValue === "") document.getElementById("updateValue").classList.add('input-error');
+                if (updateValueType === "") document.getElementById("updateValueType").classList.add('input-error');
+                if (conditionColumn !== "" && conditionValue !== "" && conditionValueType === "") {
+                    document.getElementById("conditionValueType").classList.add('input-error');
+                }
+                return;
+            } else {
+                document.getElementById("tableName").classList.remove('input-error');
+                document.getElementById("columnName").classList.remove('input-error');
+                document.getElementById("updateValue").classList.remove('input-error');
+                document.getElementById("updateValueType").classList.remove('input-error');
+                document.getElementById("conditionValueType").classList.remove('input-error');
+            }
+
+            var strSQL = "UPDATE " + tableName + " SET " + columnName + " = ";
+
+            if (updateValueType !== "文字型") {
+                strSQL += updateValue;
+            } else {
+                strSQL += "'" + updateValue + "'";
+            }
+
+            // 条件が指定されている場合は条件を追加
+            if (conditionColumn !== "" || conditionValue !== "") {
+                if (conditionValueType === "") {
+                    alert("データ型を選択してください");
+                    document.getElementById("conditionValueType").classList.add('input-error');
+                    return;
+                }
+                strSQL += " WHERE " + conditionColumn + " = ";
+
+                // 条件の値のデータ型に応じてシングルクォーテーションを付ける（文字列の場合はシングルクォーテーション付きで生成）
+                if (conditionValueType !== "文字型") {
+                    strSQL += conditionValue;
+                } else {
+                    strSQL += "'" + conditionValue + "'";
+                }
+            }
+
+            // 条件が指定されている場合は条件を追加
+            if (conditionColumn2 !== "" || conditionValue2 !== "") {
+                if (conditionValueType2 === "") {
+                    alert("データ型を選択してください");
+                    document.getElementById("conditionValueType2").classList.add('input-error');
+                    return;
+                }
+                strSQL += " AND " + conditionColumn2 + " = ";
+
+                // 条件の値のデータ型に応じてシングルクォーテーションを付ける（文字列の場合はシングルクォーテーション付きで生成）
+                if (conditionValueType2 !== "文字型") {
+                    strSQL += conditionValue2;
+                } else {
+                    strSQL += "'" + conditionValue2 + "'";
+                }
+            }
+
+            document.getElementById("updateSql").value = strSQL;
+
+            // 生成したSQL文を表示
+            alert("SQL文の生成が完了しました。生成したSQL文は以下です。\n「" + strSQL + "」");
+
+            console.log(tableName);
+            console.log(columnName);
+            console.log(updateValue);
+            console.log(updateValueType);
+            console.log(conditionColumn);
+            console.log(conditionValue);
+            console.log(conditionValueType);
+            console.log(strSQL);
+        }
+    </script>
+
+</body>
+</html>
+</code>
 
     <footer>
         <div class="inner">
